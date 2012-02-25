@@ -1,5 +1,4 @@
 from distutils.core import setup
-import graven
 
 setup(
     name = "aesc",
