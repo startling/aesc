@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+# -*- Coding: utf-8 -*-
+
+import os
+import json
+import argent
+from twisted.internet import reactor
+from twisted.web.wsgi import WSGIResource
+from twisted.web.vhost import NameVirtualHost
+from twisted.web.static import File
+from twisted.web.server import Site
+
+
+class Server(object):
+    def __init__(self, port=8080, static=None, wsgi=None):
+        """Optionally given a port number and two dictionaries (one,
+        `static`, mapping domain names to directories and another,
+        `wsgi`, mapping domain names to wsgi applications), initialize
+        a server serving them on the given port number.
+        """
+        self.port = port
+        self.root = NameVirtualHost()
+        if static != None:
+            for domain, path in static.items():
+                self.root.addHost(domain, File(path))
+        if wsgi != None:
+            for domain, app in wsgi.items():
+                self._add_wsgi(domain, app)
+
+    def _add_wsgi(self, domain, app_path):
+        "Given a domain name and an app name, initialize a wsgi app."
+        # separate the app from the module
+        module_name, app_name = app_path.rsplit(".", 1)
+        # import the application
+        module = __import__(module_name)
+        # and get the app from it.
+        application = getattr(module, app_name)
+        # and then create a resource from it.
+        resource = WSGIResource(reactor, reactor.getThreadPool(), application)
+        # finally, add it to the NameVirtualHost
+        self.root.addHost(domain, resource)
+
+    def start(self):
+        "Start the server."
+        reactor.listenTCP(self.port, Site(self.root))
+        reactor.run()
+ 
+
+@argent.Parser.from_function
+def aesc(config):
+    """Serve static files and wsgi applications, given a configuration file.
+    The configuration file should be a json object with up to three attributes:
+    "port", an integer for the port number to use, "wsgi", a mapping of domain
+    names to wsgi apps, and "static", a mapping of domain names to directories.
+    
+    config: the configuration file
+    """
+    with open(os.path.abspath(config)) as f:
+        data = json.load(f)
+    server = Server(**data)
+    server.start()
+
+
+aesc.command_line()
