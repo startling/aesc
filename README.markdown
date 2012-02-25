@@ -3,7 +3,11 @@ __aesc__ (pronounced like "[ash][]") is a little http server written in Python a
 [ash]: http://en.wiktionary.org/wiki/%C3%A6sc#Old_English
 [Twisted Web]: http://cherrypy.org/
 
+
+There's an example in the `example` directory; you can use `aesc example/configuration.json` and point your browser to localhost:8888.
+
 ## Using It:
+
 
 Configuration is done in json; your file should look like this:
 
