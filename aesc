@@ -7,8 +7,19 @@ import argent
 from twisted.internet import reactor
 from twisted.web.wsgi import WSGIResource
 from twisted.web.vhost import NameVirtualHost
-from twisted.web.static import File
 from twisted.web.server import Site
+from twisted.web.static import File
+
+
+class NotIndexed(File):
+    "A subclass of twisted.web.static.File with directories hidden."
+    def directoryListing(self):
+        return self.Nothing()
+
+    class Nothing(object):
+        "A dummy object that renders as an empty string."
+        def render(self, request):
+            return ""
 
 
 class Server(object):
@@ -22,7 +33,7 @@ class Server(object):
         self.root = NameVirtualHost()
         if static != None:
             for domain, path in static.items():
-                self.root.addHost(domain, File(path))
+                self.root.addHost(domain, NotIndexed(path))
         if wsgi != None:
             for domain, app in wsgi.items():
                 self._add_wsgi(domain, app)
