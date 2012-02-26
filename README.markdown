@@ -27,5 +27,4 @@ To start aesc, given a configuration file `config.json`, run `aesc config.json`.
 
 ## Todo:
 
-* don't do directory listings
 * match domains based on regular expressions so we can do things like `.*?\.example.com`
